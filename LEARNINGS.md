@@ -57,6 +57,11 @@ Key takeaways from development. Reference this to avoid re-debugging known issue
   but you still need to verify messages are reaching the right frame. Add diagnostic
   logging inside message handlers, not just at module load time.
 
+- **2026-02-23 — Slider on the stateless toggle goes outside of the expected area.**
+  The toggle thumb can overflow its track bounds when no explicit width/height
+  constraint is applied to the slider element. Fix: ensure the slider and its
+  container have matching size constraints so the thumb stays within the track.
+
 ---
 
 ## Build / Tooling
