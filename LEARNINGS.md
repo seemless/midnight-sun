@@ -153,6 +153,17 @@ Key takeaways from development. Reference this to avoid re-debugging known issue
   deterministic fill does resolveElement → matchedField → profile lookup. Merging them
   would complicate both. Keep them as separate exported functions in `filler.ts`.
 
+- **2026-02-23 — Ollama error: 403 Forbidden — `OLLAMA_ORIGINS` not set.**
+  Ollama 0.1.24+ enforces an origin allowlist. Requests from a `chrome-extension://`
+  origin (which is what the background service worker sends) are rejected with 403
+  unless the origin is explicitly permitted. Fix: start Ollama with the env var set:
+  ```
+  OLLAMA_ORIGINS=chrome-extension://* ollama serve
+  ```
+  If a custom `baseUrl` points to a reverse proxy, check that proxy's ACL rules as
+  well. The error is thrown at `ollama.ts` when `resp.ok` is false:
+  `throw new Error(\`Ollama error: \${resp.status} \${resp.statusText}\`)`.
+
 ---
 
 ## Detection Bugs (from debug export analysis)
