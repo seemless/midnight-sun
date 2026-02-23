@@ -193,7 +193,7 @@ Skills from the source material relevant to this job, prioritized.
 STRICT RULES — these are non-negotiable:
 1. YOUR PRIMARY SOURCE IS THE EXISTING RESUME TEXT (if provided). It contains the candidate's real companies, titles, accomplishments, and education. Use it verbatim where appropriate, rewording only to tailor for this role.
 2. The structured profile JSON is a secondary reference. If the existing resume has richer detail than the JSON, PREFER the resume text.
-3. ONLY use experience, education, skills, companies, and job titles that ACTUALLY EXIST in the source material. Count the experiences — your resume must have exactly the same ones, not more.
+3. ONLY use experience, education, skills, companies, and job titles that ACTUALLY EXIST in the source material. Count the experiences — your resume must have exactly the same ones, not more. Do NOT invent experience.
 4. NEVER invent or fabricate metrics (percentages, dollar amounts, time savings). If the source material doesn't include a metric, don't add one. "Improved performance" is fine without "by 20%".
 5. NEVER invent companies, job titles, or projects not in the source material.
 6. NEVER use bracket placeholders like [project], [company], [X%], [University Name]. Everything must be concrete text from the source material.

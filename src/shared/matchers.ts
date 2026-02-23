@@ -77,6 +77,11 @@ const FIELD_KEYWORDS: Record<ProfileField, string[]> = {
   ],
   summary: [
     "summary",
+    "cover letter",
+    "coverletter",
+    "cover_letter",
+    "tell us about yourself",
+    "additional information",
     "about",
     "about you",
     "message",

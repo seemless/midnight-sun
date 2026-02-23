@@ -60,11 +60,15 @@ export function parseResume(text: string): Profile {
   profile.experiences = parseExperiences(expLines);
 
   // Fallback: if no experience section found (or it parsed nothing),
-  // scan ALL lines for date-range patterns and try to extract entries
+  // scan non-education sections for date-range patterns and try to extract entries.
+  // Exclude education/skills/summary to avoid false positives from degree date ranges.
+  const EXPERIENCE_ONLY_SECTIONS = new Set(["education", "skills", "summary", "about", "certifications", "projects"]);
   if (profile.experiences.length === 0) {
     const allLines: string[] = [];
-    for (const [, sectionLines] of sections) {
-      allLines.push(...sectionLines, ""); // blank line separator between sections
+    for (const [sectionName, sectionLines] of sections) {
+      if (!EXPERIENCE_ONLY_SECTIONS.has(sectionName)) {
+        allLines.push(...sectionLines, ""); // blank line separator between sections
+      }
     }
     profile.experiences = parseExperiences(allLines);
   }
