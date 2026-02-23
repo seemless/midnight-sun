@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Midnight Sun is a Chrome extension (Manifest V3) that auto-fills job applications, generates smart answers via LLM (Ollama, OpenAI, Anthropic, or Gemini), and tracks application status. It works across every major ATS — Greenhouse, Lever, Ashby, Workday, iCIMS, Taleo, LinkedIn, Indeed — without any site-specific fill logic.
+The Midnight Sun is a Chrome extension (Manifest V3) that auto-fills job applications, generates smart answers and tailored resumes via LLM (Ollama, OpenAI, Anthropic, or Gemini), attaches files to upload fields, and tracks application status. It works across every major ATS — Greenhouse, Lever, Ashby, Workday, iCIMS, Taleo, LinkedIn, Indeed — without any site-specific fill logic.
 
 **Stack:** TypeScript, React, Tailwind CSS, Vite + CRXJS, Vitest, happy-dom.
 
@@ -33,6 +33,8 @@ The Midnight Sun is a Chrome extension (Manifest V3) that auto-fills job applica
 │  │  detector.ts ─► detectFields(document)                       │   │
 │  │  filler.ts   ─► fillFields(fields, profile, document)        │   │
 │  │  snapshot.ts ─► extractSnapshot(document, url)                │   │
+│  │  index.ts    ─► detectFileInputs(document)                    │   │
+│  │              ─► attachFileToInput(fileInput, file)             │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                      │
 │  ┌──────────────────────────────────────────────────────────────┐   │
@@ -56,7 +58,7 @@ The Midnight Sun is a Chrome extension (Manifest V3) that auto-fills job applica
 | Component | Location | Role |
 |-----------|----------|------|
 | **Popup** | `src/popup/` | React UI with five tabs: Fill, Dashboard, Profile, Resumes, Debug. State machine drives the detect → fill → smart-apply workflow. Resume library supports upload + LLM generation + per-job linking. |
-| **Content Script** | `src/content/` | Injected into every page (`<all_urls>`, `all_frames: true`). Detects form fields (text + radio/checkbox groups), fills values, extracts page snapshots. No ATS-specific logic. |
+| **Content Script** | `src/content/` | Injected into every page (`<all_urls>`, `all_frames: true`). Detects form fields (text + radio/checkbox groups), fills values, extracts page snapshots, detects file inputs, and attaches files via DataTransfer API. No ATS-specific logic. |
 | **Background Worker** | `src/background/` | Service worker handling LLM provider proxy requests, all-frames detection, and badge updates. |
 | **Shared** | `src/shared/` | Types, matchers, storage, URL utilities, normalization — shared across all contexts. |
 | **Lib** | `src/lib/llm/` | LLM provider abstraction: interface, registry, shared prompt/parser, 4 providers (Ollama, OpenAI, Anthropic, Gemini). |
@@ -245,14 +247,18 @@ For open-ended questions ("Why do you want to work here?", "Describe your experi
 ```
 src/lib/llm/
   types.ts          SmartApplyProvider interface, ProviderConfig, ProviderId
-  prompt.ts         buildApplicationPrompt(), parseSmartResponse() — shared by all providers
+  prompt.ts         All prompt builders + response parsers — shared by all providers:
+                      buildApplicationPrompt(), parseSmartResponse()
+                      buildResumePrompt(), buildCoverLetterPrompt(), parseResumeResponse()
+                      buildGapDetectionPrompt(), parseGapDetectionResponse()
+                      stripTrailingCommentary() — removes LLM meta-text from generated content
   registry.ts       registerProvider(), getProvider(), listProviders()
   index.ts          Barrel export (imports all providers to trigger registration)
   providers/
-    ollama.ts       Ollama (local, no API key, /api/generate)
-    openai.ts       OpenAI (/v1/chat/completions, Bearer token)
-    anthropic.ts    Anthropic (/v1/messages, x-api-key header)
-    gemini.ts       Gemini (/v1beta/models/{model}:generateContent, key in query)
+    ollama.ts       Ollama (local, no API key, /api/generate, 180s timeout)
+    openai.ts       OpenAI (/v1/chat/completions, Bearer token, 180s timeout)
+    anthropic.ts    Anthropic (/v1/messages, x-api-key header, 180s timeout)
+    gemini.ts       Gemini (/v1beta/models/{model}:generateContent, key in query, 180s timeout)
 ```
 
 Every provider implements the same `SmartApplyProvider` interface:
@@ -316,6 +322,96 @@ Generated answers are cached in `SmartAnswersDoc` records keyed by `postingKey`:
 
 ---
 
+## Resume & Cover Letter Generation
+
+### Generation Pipeline
+
+Resume and cover letter generation uses the same provider infrastructure as Smart Apply but returns markdown instead of JSON:
+
+```
+Popup (FillPreview/Resumes)    Background              LLM Provider
+  │                                │                          │
+  ├─ Gap detection (optional) ────►│                          │
+  │◄── PROFILE_GAPS_RESULT ────────┤                          │
+  │  [user fills gaps]             │                          │
+  │                                │                          │
+  ├─ GENERATE_RESUME ─────────────►│                          │
+  │  (+ existingResume, voice)     ├─ buildResumePrompt() ───►│
+  │                                │◄── markdown response ────┤
+  │                                ├─ parseResumeResponse() ──┤
+  │◄── RESUME_RESULT ──────────────┤  (strip fences + commentary)
+  │                                │                          │
+  │  [saved to resume library]     │                          │
+```
+
+### Commentary Stripping
+
+LLMs frequently append meta-text after generating content ("This resume adheres to the provided guidelines..."). The `parseResumeResponse()` pipeline handles this:
+
+1. **Prompt-level prevention** — Rules explicitly forbid appending commentary (rule 11 for resumes, rule 12 for cover letters)
+2. **Post-processing** — `stripTrailingCommentary()` walks backward through trailing paragraph blocks, matching against ~20 commentary patterns (`/this resume/i`, `/adheres to/i`, `/source material/i`, etc.)
+3. **Safety** — Only strips blocks that match commentary patterns AND are not markdown structural elements (headings, bullets, bold, tables). If stripping would remove everything, returns the original text.
+
+### Generation Run Logging
+
+Every generation (success or failure) is logged as a `GenerationRun`:
+- `id`, `timestamp`, `url`, `company`, `role`
+- `docType`: `"resume"` or `"cover-letter"`
+- `model`: which LLM model was used
+- `durationMs`: wall-clock time via `performance.now()`
+- `contentLength`: character count of generated content (0 on failure)
+- `error`: error message if generation failed
+- `source`: `"fill-preview"` or `"resumes-tab"` (where generation was triggered)
+
+Stored in `generationRuns` (20 max, newest first). Displayed in the Debug tab alongside fill runs and smart apply runs.
+
+---
+
+## File Input Detection & Attachment
+
+### The Problem
+
+Job application pages almost always have a "Upload Resume/CV" file input. Users had to manually download their generated resume, then navigate to the file input and upload it — breaking the auto-fill flow.
+
+### The Solution
+
+The extension detects `<input type="file">` elements and programmatically attaches files using the `DataTransfer` API.
+
+### Detection
+
+`detectFileInputs(document)` in the content script:
+1. Queries `input[type="file"]` (these were previously excluded from `FILLABLE_SELECTOR` via `:not([type="file"])`)
+2. Extracts label signals using the same `extractSignals()` pipeline as regular fields
+3. Returns `FileInputInfo[]` with `selectorCandidates`, `label`, `accept` attribute, and `multiple` flag
+4. Scans same-origin iframes
+
+### Attachment
+
+`attachFileToInput()` in the content script:
+1. Resolves the file input element via selector candidates
+2. Creates a `File` from the content string using the `DataTransfer` API:
+   ```typescript
+   const blob = new Blob([content], { type: mimeType });
+   const file = new File([blob], fileName, { type: mimeType });
+   const dt = new DataTransfer();
+   dt.items.add(file);
+   input.files = dt.files;
+   ```
+3. Dispatches `input` and `change` events with `{ bubbles: true }` for framework compatibility
+
+The `DataTransfer` API is required because browsers block direct `.value` assignment on file inputs for security reasons.
+
+### UI Flow
+
+The "Attach to File Input" button in FillPreview:
+1. Sends `DETECT_FILE_INPUTS` to content script
+2. Picks the best target (prefers labels matching `/resume|cv|curriculum/i`)
+3. Checks `accept` attribute compatibility (warns if the field only accepts PDFs)
+4. Sends `ATTACH_FILE` with the selected resume's markdown content
+5. Shows status feedback: detecting → attaching → success/error
+
+---
+
 ## Storage Architecture
 
 ### Layer 1: Storage Adapter (`storage.ts`)
@@ -327,7 +423,8 @@ High-level CRUD for user data, using an adapter pattern for testability:
 | `profile` | `Profile` | Parsed resume: name, contact, experiences, education, skills |
 | `applications` | `Application[]` | Job tracking with 7-state status (saved → ghosted) |
 | `fillRuns` | `FillRun[]` | Audit log of fill attempts (100 max, newest first) |
-| `smartApplyRuns` | `SmartApplyRun[]` | Audit log of LLM generations (30 max) |
+| `smartApplyRuns` | `SmartApplyRun[]` | Audit log of LLM answer generations (30 max) |
+| `generationRuns` | `GenerationRun[]` | Audit log of resume/CL generations (20 max) — tracks url, company, role, docType, model, durationMs, contentLength, errors, source |
 | `settings` | `Settings` | User preferences (autoDetect, theme, statelessMode, providerConfig) |
 | `voice` | `Voice` | User-authored pitch, strengths, role targets, constraints, tone |
 
@@ -478,6 +575,6 @@ The Debug tab's "Export All" button produces a JSON file for offline analysis. S
 }
 ```
 
-**What's included:** All fill runs from the last 100 attempts, with full field detection data, fill results, and timing.
+**What's included:** All fill runs (last 100), smart apply runs (last 30), and generation runs (last 20) with full field detection data, fill results, timing, and model metadata.
 
 **What's NOT included:** Profile data (PII), smart apply answers, settings. The export is safe to share for debugging.

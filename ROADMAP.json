@@ -1,6 +1,72 @@
 {
-  "version": "0.1.0",
-  "lastUpdated": "2026-02-21",
+  "version": "0.2.0",
+  "lastUpdated": "2026-02-23",
+  "vision": {
+    "tagline": "In the land of the midnight sun, there is no hiding. Every shadow is illuminated, every detail revealed.",
+    "shortTerm": "Chrome extension that turns the job application grind into something fast, intelligent, and maybe even a little fun.",
+    "longTerm": "A career intelligence system that helps you figure out what you want, get it, and adapt as your goals change. Not just filling forms — helping you navigate work, transitions, and the question of what you actually want to do with your time.",
+    "philosophicalBet": "The hard part of careers isn't finding jobs. It's finding yourself. The technology — auto-fill, LLM generation, ATS detection — is just removing friction so you can focus on the real question."
+  },
+  "narrative": {
+    "concept": "Operation Midnight Sun — an unlockable espionage story woven into the product. You're an agent embedded in the corporate world, committing acts of corporate espionage. Every application is a mission. Every interview is a debrief. Every offer is an extraction.",
+    "tone": "Tongue-in-cheek. It knows it's absurd. But the framing makes the grind feel like a game, and the game makes you more strategic.",
+    "purpose": [
+      "Reframes rejection as intelligence — 'The mission was compromised' hits different than 'I didn't get the job'",
+      "Creates forward momentum — you want to see the next story beat, so you keep going",
+      "Teaches strategy — espionage framing naturally encourages thinking about positioning, leverage, timing, and information asymmetry"
+    ],
+    "milestones": [
+      { "trigger": "first_profile_import", "beat": "Recruitment", "description": "Your handler reaches out. You're given your cover identity." },
+      { "trigger": "first_auto_fill", "beat": "First Contact", "description": "You make your approach. The target doesn't suspect a thing." },
+      { "trigger": "10_applications", "beat": "Building the Network", "description": "Your web of contacts expands. Intelligence flows in." },
+      { "trigger": "first_interview", "beat": "Inside the Building", "description": "You've breached the perimeter. Now the real work begins." },
+      { "trigger": "first_offer", "beat": "The Package", "description": "They want you. The question is: do you want them?" },
+      { "trigger": "career_transition", "beat": "Going Dark", "description": "You disappear from one life and surface in another." },
+      { "trigger": "goals_reassessed", "beat": "New Orders", "description": "The mission has changed. You adapt." },
+      { "trigger": "1_year_of_data", "beat": "The Long Con", "description": "You've been playing this game longer than anyone suspects." }
+    ],
+    "surfaces": [
+      "Briefing cards at milestone moments",
+      "Mission reports that reframe activity data as intelligence summaries",
+      "Dossiers that turn job descriptions into target profiles",
+      "Handler messages that provide career guidance in-character"
+    ]
+  },
+  "desktopApp": {
+    "status": "design",
+    "rationale": "Chrome extensions have fundamental persistence limitations: 10MB storage quota, service workers killed at any time, popup closes = state resets, no background processes, no filesystem access, no cross-browser support. A career intelligence system needs years of data, periodic analysis, and a persistent model of your trajectory.",
+    "stack": "Electron or Tauri",
+    "communication": [
+      {
+        "method": "Native Messaging",
+        "description": "chrome.runtime.connectNative() — direct, low-latency, no network dependency",
+        "primary": true
+      },
+      {
+        "method": "Local HTTP Server",
+        "description": "Desktop app runs localhost API, extension fetches from background worker",
+        "primary": false
+      }
+    ],
+    "responsibilities": {
+      "persistence": "Unlimited SQLite storage — full career history, resume versions, career timeline",
+      "intelligence": "Long-running LLM analysis, career trajectory modeling, skill gap identification, salary benchmarking",
+      "guidanceCounselor": "Periodic check-ins, goal setting/tracking, career transition planning, values clarification, decision frameworks",
+      "narrative": "Story state machine, milestone tracking, mission briefings, handler messages, achievement system"
+    }
+  },
+  "guidanceCounselor": {
+    "status": "vision",
+    "description": "The endgame. The Midnight Sun becomes a long-term career companion.",
+    "capabilities": [
+      "Knows you deeply — energy levels, what makes you come alive, what drains you, risk tolerance, financial situation, life stage",
+      "Helps you figure out what you want — reflects your own patterns back to you (which offers you accepted vs declined, what roles energize you)",
+      "Adapts as you change — your goals at 25 are not your goals at 35 or 45. Updates its model as life changes happen",
+      "Helps you where you are now — not just job transitions. Difficult managers, raise negotiations, team moves, performance reviews",
+      "Bridges intention and action — turns 'I want to grow' into 'Apply to 3 team-lead roles this week' or 'Message 2 people who made the IC-to-management transition'"
+    ],
+    "requiresDesktopApp": true
+  },
   "phases": [
     {
       "id": "phase-0",
@@ -51,7 +117,7 @@
     {
       "id": "phase-4",
       "name": "Resume & Cover Letter Generation",
-      "status": "in_progress",
+      "status": "done",
       "targetWeek": 4,
       "features": [
         { "id": "4.1", "name": "Resume generation (generateResume via LLM)", "status": "done" },
@@ -59,8 +125,12 @@
         { "id": "4.3", "name": "Resumes tab UI (library + editor + markdown preview + download)", "status": "done" },
         { "id": "4.5", "name": "Per-job resume linking (JobRecord.linkedResumeId)", "status": "done" },
         { "id": "4.6", "name": "Resume picker in FillPreview (generated + auto-applied phases)", "status": "done" },
-        { "id": "4.1b", "name": "generateCoverLetter (separate from resume)", "status": "not_started" },
-        { "id": "4.4", "name": "File input attachment callout", "status": "not_started" }
+        { "id": "4.1b", "name": "Cover letter generation (generateCoverLetter via LLM)", "status": "done" },
+        { "id": "4.4", "name": "File input detection + programmatic attachment (DataTransfer API)", "status": "done" },
+        { "id": "4.7", "name": "Strip trailing LLM commentary (stripTrailingCommentary)", "status": "done" },
+        { "id": "4.8", "name": "Generation run audit logging (GenerationRun + Debug tab)", "status": "done" },
+        { "id": "4.9", "name": "Gap detection (LLM asks clarifying questions before generating)", "status": "done" },
+        { "id": "4.10", "name": "PDF resume export (markdown → PDF)", "status": "not_started" }
       ]
     },
     {
@@ -74,7 +144,73 @@
         { "id": "5.3", "name": "Dashboard enrichment (fill status, view logs)", "status": "not_started" },
         { "id": "5.4", "name": "Submit detection (future, not v1)", "status": "not_started" }
       ]
+    },
+    {
+      "id": "phase-6",
+      "name": "UX & Polish",
+      "status": "not_started",
+      "targetWeek": 6,
+      "features": [
+        { "id": "6.1", "name": "Side panel mode (persistent UI alongside the page)", "status": "not_started" },
+        { "id": "6.2", "name": "Answer library UI (browse, edit, delete saved answers)", "status": "not_started" },
+        { "id": "6.3", "name": "Cross-tab state sync", "status": "not_started" },
+        { "id": "6.4", "name": "Better file attachment heuristics (PDF upload when field requires it)", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Desktop Companion App MVP",
+      "status": "not_started",
+      "targetWeek": null,
+      "features": [
+        { "id": "7.1", "name": "Native messaging host setup (chrome.runtime.connectNative)", "status": "not_started" },
+        { "id": "7.2", "name": "SQLite career DB (profile, history, goals, analytics)", "status": "not_started" },
+        { "id": "7.3", "name": "Extension ↔ desktop sync protocol", "status": "not_started" },
+        { "id": "7.4", "name": "Career timeline visualization", "status": "not_started" },
+        { "id": "7.5", "name": "Resume version history", "status": "not_started" },
+        { "id": "7.6", "name": "Local HTTP API fallback", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "phase-8",
+      "name": "Narrative Engine",
+      "status": "not_started",
+      "targetWeek": null,
+      "features": [
+        { "id": "8.1", "name": "Milestone tracker (trigger detection from user activity)", "status": "not_started" },
+        { "id": "8.2", "name": "Story state machine (which beats triggered, what's next)", "status": "not_started" },
+        { "id": "8.3", "name": "Briefing card UI (milestone moment overlays)", "status": "not_started" },
+        { "id": "8.4", "name": "Mission reports (activity data reframed as intelligence summaries)", "status": "not_started" },
+        { "id": "8.5", "name": "Handler messages (career guidance in-character)", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "phase-9",
+      "name": "Guidance Counselor",
+      "status": "not_started",
+      "targetWeek": null,
+      "features": [
+        { "id": "9.1", "name": "Interview prep generation (tailored to company + role + experience)", "status": "not_started" },
+        { "id": "9.2", "name": "Periodic check-ins (desktop app notifications)", "status": "not_started" },
+        { "id": "9.3", "name": "Goal setting and tracking", "status": "not_started" },
+        { "id": "9.4", "name": "Career transition planning", "status": "not_started" },
+        { "id": "9.5", "name": "Values/preference modeling (inferred from accept/decline patterns)", "status": "not_started" },
+        { "id": "9.6", "name": "Job market pattern recognition", "status": "not_started" },
+        { "id": "9.7", "name": "Skill gap identification", "status": "not_started" }
+      ]
     }
+  ],
+  "priorities": [
+    { "priority": "P0", "item": "PDF resume export", "effort": "medium", "impact": "high", "reason": "Unblocks attachment to PDF-only fields" },
+    { "priority": "P0", "item": "Select normalization (country/state)", "effort": "medium", "impact": "high", "reason": "Fixes most remaining fill failures" },
+    { "priority": "P1", "item": "Desktop app MVP (native messaging + SQLite)", "effort": "large", "impact": "high", "reason": "Unblocks persistence + intelligence" },
+    { "priority": "P1", "item": "Narrative engine (milestone tracker + story state)", "effort": "medium", "impact": "high", "reason": "Makes the product sticky" },
+    { "priority": "P1", "item": "Side panel mode", "effort": "medium", "impact": "medium", "reason": "Better UX than popup (persistent, wider)" },
+    { "priority": "P2", "item": "Career timeline visualization", "effort": "medium", "impact": "medium", "reason": "First intelligence feature" },
+    { "priority": "P2", "item": "Interview prep generation", "effort": "medium", "impact": "high", "reason": "High value, leverages existing LLM infra" },
+    { "priority": "P2", "item": "Guidance counselor periodic check-ins", "effort": "large", "impact": "high", "reason": "Requires desktop app" },
+    { "priority": "P3", "item": "Job market pattern recognition", "effort": "large", "impact": "medium", "reason": "Requires aggregate data" },
+    { "priority": "P3", "item": "Values/preference modeling", "effort": "large", "impact": "high", "reason": "The hard AI problem" }
   ],
   "completed": [
     { "name": "3-stage field detection pipeline (21 fields)", "completedDate": "2026-02-21" },
@@ -135,6 +271,23 @@
     { "name": "Resume generation: GENERATE_RESUME message + background handler", "completedDate": "2026-02-21" },
     { "name": "Resumes tab: library list + editor + markdown preview + download", "completedDate": "2026-02-21" },
     { "name": "Per-job resume linking: JobRecord.linkedResumeId + FillPreview picker", "completedDate": "2026-02-21" },
-    { "name": "26 new tests: 18 resume-prompt + 8 resume-store (199 total)", "completedDate": "2026-02-21" }
+    { "name": "26 new tests: 18 resume-prompt + 8 resume-store (199 total)", "completedDate": "2026-02-21" },
+    { "name": "Generation timeout increased 90s → 180s (all 4 providers)", "completedDate": "2026-02-23" },
+    { "name": "GenerationRun audit logging (resume/CL gen timing, model, errors, source)", "completedDate": "2026-02-23" },
+    { "name": "Generation Runs section in Debug tab (expandable cards with metadata)", "completedDate": "2026-02-23" },
+    { "name": "Bug fix: duplicate stateless mode toggle removed from Profile.tsx", "completedDate": "2026-02-23" },
+    { "name": "Cover letter generation: buildCoverLetterPrompt + GENERATE_COVER_LETTER message", "completedDate": "2026-02-23" },
+    { "name": "Gap detection: buildGapDetectionPrompt + DETECT_PROFILE_GAPS message", "completedDate": "2026-02-23" },
+    { "name": "Smart Apply hallucination fix: existingResume threaded through to prompts", "completedDate": "2026-02-23" },
+    { "name": "CSS hidden state persistence (auto-save draft on blur, session storage)", "completedDate": "2026-02-23" },
+    { "name": "stripTrailingCommentary: removes LLM meta-text from generated resumes/CLs", "completedDate": "2026-02-23" },
+    { "name": "Prompt rules 11/12: forbid appending commentary after resume/CL content", "completedDate": "2026-02-23" },
+    { "name": "File input detection: detectFileInputs() scans for input[type=file] + iframes", "completedDate": "2026-02-23" },
+    { "name": "File attachment: attachFileToInput() via DataTransfer API + event dispatch", "completedDate": "2026-02-23" },
+    { "name": "Attach to File Input button in FillPreview (detect → match → attach flow)", "completedDate": "2026-02-23" },
+    { "name": "FileInputInfo type + DETECT_FILE_INPUTS/ATTACH_FILE message types", "completedDate": "2026-02-23" },
+    { "name": "ARCHITECTURE.md updated: resume gen, commentary stripping, file attachment, generation runs", "completedDate": "2026-02-23" },
+    { "name": "LEARNINGS.md updated: LLM output post-processing, file input, generation timeout", "completedDate": "2026-02-23" },
+    { "name": "README.md rewritten: full feature list, current state, vision reference", "completedDate": "2026-02-23" }
   ]
 }

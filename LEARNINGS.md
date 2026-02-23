@@ -19,6 +19,9 @@ Key takeaways from development. Reference this to avoid re-debugging known issue
 | Search/filter fields being filled | `isSearchFormElement()`, `SEARCH_FORM_SELECTORS`, `[role="search"]` ancestor check |
 | "Name" matches firstName not fullName | Bare "name" keyword at index 0 of fullName keywords (exact-match 1.0 vs reverse-contains 0.7) |
 | Resume generation fails | Same as Smart Apply: provider config, API key, background worker. Check `GENERATE_RESUME` message handler |
+| LLM appends commentary after resume | `stripTrailingCommentary()` in `parseResumeResponse()`, prompt rules 11/12 |
+| File attachment fails | `DETECT_FILE_INPUTS` returns empty → no `input[type="file"]` on page. Check iframes. `ATTACH_FILE` fails → element not found or `accept` attribute incompatible |
+| Generation times out | `DEFAULT_TIMEOUT` is 180s (was 90s). Check model size, provider latency. Background worker logs show the actual fetch duration |
 
 ## Triage Checklist (copy/paste for debug exports)
 
@@ -298,3 +301,83 @@ Key takeaways from development. Reference this to avoid re-debugging known issue
   Originally `"direct" | "warm" | "technical" | "enthusiastic"`, now `string` to support
   custom tones via "Other" dropdown option. `EMPTY_VOICE.tone` still defaults to `"direct"`.
   The prompt interpolation (`Write in a ${voice.tone} tone`) works with any string.
+
+---
+
+## LLM Output Post-Processing
+
+- **2026-02-23 — LLMs leak system instructions into generated resume/CL content.**
+  Models (especially instruction-tuned ones) frequently append trailing commentary after
+  generating the requested content. Example: "This resume adheres strictly to the provided
+  guidelines, using only the experiences, education, skills, companies, and job titles from
+  the existing source material." This is the model echoing its own instructions back.
+  Fix has two layers:
+  1. **Prompt rules** — Added rule 11 to `buildResumePrompt()` and rule 12 to
+     `buildCoverLetterPrompt()` explicitly forbidding commentary.
+  2. **Post-processing** — `stripTrailingCommentary()` walks backward through trailing
+     paragraph blocks (text separated by blank lines) and strips blocks matching ~20
+     commentary regex patterns. Safety: blocks containing markdown structural elements
+     (headings, bullets, bold, tables, HRs) are never stripped. If stripping would
+     remove everything, the original text is returned unchanged.
+
+- **2026-02-23 — Commentary stripping must walk backward, not forward.**
+  The original instinct was to scan the full text for commentary patterns. This is wrong
+  because legitimate resume content can contain words like "note" or "the above" in context.
+  Walking backward from the end and stopping at the first non-commentary block ensures we
+  only strip trailing meta-text, never embedded content.
+
+- **2026-02-23 — `isMarkdownStructure()` is the safety net.**
+  When deciding whether a trailing paragraph is commentary, we first check if any line in
+  the block is a markdown structural element (starts with `#`, `-`, `*`, `|`, `**`, `---`).
+  If so, it's content — stop stripping. This prevents accidentally removing a Skills section
+  that happens to contain the word "note" or "the above".
+
+---
+
+## File Input Detection & Attachment
+
+- **2026-02-23 — `input[type="file"]` is explicitly excluded from `FILLABLE_SELECTOR`.**
+  The detector uses `:not([type="file"])` in its input selector because file inputs can't
+  be filled with text values. A separate `detectFileInputs()` function handles them with
+  their own message flow (`DETECT_FILE_INPUTS` / `ATTACH_FILE`).
+
+- **2026-02-23 — DataTransfer API is the only way to programmatically set file input values.**
+  Browsers block `input.value = "path"` on file inputs for security. The `DataTransfer` API
+  lets you create a `File` object, add it to a `DataTransfer`, and assign `dt.files` to
+  `input.files`. This is the Chrome-standard approach:
+  ```typescript
+  const dt = new DataTransfer();
+  dt.items.add(new File([content], fileName, { type: mimeType }));
+  input.files = dt.files;
+  ```
+  Then dispatch `input` + `change` events with `{ bubbles: true }` for React/Angular.
+
+- **2026-02-23 — File input `accept` attribute must be checked before attachment.**
+  Many job sites only accept PDF uploads (`accept=".pdf,application/pdf"`). Attaching a
+  markdown file to a PDF-only field will fail silently or show an error. The UI checks the
+  `accept` attribute and warns the user when markdown/text isn't compatible. Future: PDF
+  export from markdown to support these fields.
+
+- **2026-02-23 — File input label extraction reuses `extractSignals()`.**
+  Rather than writing new label extraction logic for file inputs, we reuse the existing
+  `extractSignals()` + `getSelectorCandidates()` from `detector.ts`. The signals tell us
+  whether the upload field is for a resume, cover letter, or "other" document.
+
+---
+
+## Generation Timeout & Logging
+
+- **2026-02-23 — Generation timeout increased from 90s to 180s.**
+  Default `DEFAULT_TIMEOUT` was 90 seconds. Larger models (70B params on Ollama, or
+  heavy Anthropic prompts) routinely exceeded this. Doubled to 180s across all 4 providers.
+
+- **2026-02-23 — `GenerationRun` audit logging follows `FillRun` / `SmartApplyRun` pattern.**
+  Every resume/CL generation (success or failure) is logged with `performance.now()` timing,
+  model metadata, content length, and error messages. Stored in `generationRuns` (20 max).
+  `source` field tracks whether generation was triggered from the Resumes tab or FillPreview.
+  Displayed in Debug tab with expandable cards showing duration, model, output size, errors.
+
+- **2026-02-23 — Duplicate stateless mode toggle in Profile.tsx.**
+  The Profile page had two identical stateless mode toggle blocks (copy-paste artifact).
+  Second instance removed. When debugging duplicate UI elements, always search for the
+  exact JSX comment string — the first instance was the intended one.
