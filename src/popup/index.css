@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Aurora gradient for header */
+.aurora-gradient {
+  background: linear-gradient(
+    135deg,
+    #69db7c 0%,
+    #38d9a9 25%,
+    #74c0fc 50%,
+    #b197fc 75%,
+    #f783ac 100%
+  );
+}
+
+.aurora-text {
+  background: linear-gradient(
+    135deg,
+    #69db7c 0%,
+    #38d9a9 25%,
+    #74c0fc 50%,
+    #b197fc 75%,
+    #f783ac 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

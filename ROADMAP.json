@@ -1,0 +1,140 @@
+{
+  "version": "0.1.0",
+  "lastUpdated": "2026-02-21",
+  "phases": [
+    {
+      "id": "phase-0",
+      "name": "Debug Visibility",
+      "status": "done",
+      "targetWeek": 1,
+      "features": [
+        { "id": "0.1", "name": "Debug Tab UI (last N runs)", "status": "done" },
+        { "id": "0.2", "name": "Copy JSON button (single run + bundle)", "status": "done" },
+        { "id": "0.3", "name": "Export All Logs (download .json)", "status": "done" }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Smart Fill Actually Fills",
+      "status": "done",
+      "targetWeek": 1,
+      "features": [
+        { "id": "2.1", "name": "Fill contenteditable / role=textbox", "status": "done" },
+        { "id": "2.2", "name": "Expand repair selector to all textbox types", "status": "done" },
+        { "id": "2.3", "name": "Add frameId tracking to smart fill targets", "status": "done" },
+        { "id": "2.4", "name": "Separate fillSmartEntries in filler.ts", "status": "done" }
+      ]
+    },
+    {
+      "id": "phase-1",
+      "name": "Expand Profile & Field Coverage",
+      "status": "not_started",
+      "targetWeek": 2,
+      "features": [
+        { "id": "1.1", "name": "Add new profile fields (address, heardAbout)", "status": "not_started" },
+        { "id": "1.2", "name": "Expand keyword coverage (city/state/zip/title/auth)", "status": "not_started" },
+        { "id": "1.3", "name": "Select normalization (country/state/yes-no)", "status": "not_started" },
+        { "id": "1.4", "name": "Gate sensitive fields (salary/startDate/heardAbout)", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Enrich Smart Fill Context",
+      "status": "not_started",
+      "targetWeek": 3,
+      "features": [
+        { "id": "3.1", "name": "Improve prompt template (concrete achievements)", "status": "not_started" },
+        { "id": "3.2", "name": "Better context extraction (strip nav/sidebar)", "status": "not_started" },
+        { "id": "3.3", "name": "Profile highlights in prompt (top experiences/skills)", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Resume & Cover Letter Generation",
+      "status": "in_progress",
+      "targetWeek": 4,
+      "features": [
+        { "id": "4.1", "name": "Resume generation (generateResume via LLM)", "status": "done" },
+        { "id": "4.2", "name": "Resume store (ResumeDoc CRUD, ms:resume:* namespace)", "status": "done" },
+        { "id": "4.3", "name": "Resumes tab UI (library + editor + markdown preview + download)", "status": "done" },
+        { "id": "4.5", "name": "Per-job resume linking (JobRecord.linkedResumeId)", "status": "done" },
+        { "id": "4.6", "name": "Resume picker in FillPreview (generated + auto-applied phases)", "status": "done" },
+        { "id": "4.1b", "name": "generateCoverLetter (separate from resume)", "status": "not_started" },
+        { "id": "4.4", "name": "File input attachment callout", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Application Lifecycle",
+      "status": "not_started",
+      "targetWeek": 5,
+      "features": [
+        { "id": "5.1", "name": "Mark Applied button after fill", "status": "not_started" },
+        { "id": "5.2", "name": "Link FillRun to Application", "status": "not_started" },
+        { "id": "5.3", "name": "Dashboard enrichment (fill status, view logs)", "status": "not_started" },
+        { "id": "5.4", "name": "Submit detection (future, not v1)", "status": "not_started" }
+      ]
+    }
+  ],
+  "completed": [
+    { "name": "3-stage field detection pipeline (21 fields)", "completedDate": "2026-02-21" },
+    { "name": "Deterministic fill with native setter + event dispatch", "completedDate": "2026-02-21" },
+    { "name": "Smart fill (Ollama answer generation + fill)", "completedDate": "2026-02-21" },
+    { "name": "Diagnostics panel (raw counts, field-level debug)", "completedDate": "2026-02-21" },
+    { "name": "Frame detection (frameId:0 + all-frames fallback)", "completedDate": "2026-02-21" },
+    { "name": "Demographic field gating (EEO never auto-filled)", "completedDate": "2026-02-21" },
+    { "name": "Job store + snapshots + answer caching", "completedDate": "2026-02-21" },
+    { "name": "Soft visibility filtering (tag vs hard-skip)", "completedDate": "2026-02-21" },
+    { "name": "Content script diagnostic logging", "completedDate": "2026-02-21" },
+    { "name": "ARCHITECTURE.md", "completedDate": "2026-02-21" },
+    { "name": "Debug Tab UI (DebugLog.tsx + 4th tab)", "completedDate": "2026-02-21" },
+    { "name": "Copy JSON (single run + debug bundle)", "completedDate": "2026-02-21" },
+    { "name": "Export All Logs (download .json)", "completedDate": "2026-02-21" },
+    { "name": "fillSmartEntries: contenteditable + role=textbox support", "completedDate": "2026-02-21" },
+    { "name": "Repair selector expanded to all open-question types", "completedDate": "2026-02-21" },
+    { "name": "frameId tracking on SmartFillEntry", "completedDate": "2026-02-21" },
+    { "name": "fillSmartEntries separated into filler.ts", "completedDate": "2026-02-21" },
+    { "name": "ROADMAP.json + LEARNINGS.md living documents", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: Recaptcha/infrastructure exclusion (isInfrastructure)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: Country code dropdown explosion (listbox option filtering)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: Google Forms heading extraction (ancestor heading scan)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: Essay-prompt confidence penalty (prevents wrong profile matches)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: extractOpenQuestions detects input[type=text] essay fields", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: Previous-sibling text capped at 200 chars + generic text skipped", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: Low-confidence fill threshold (confidence < 0.4 skipped)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: LGBTQ+ added to DEMOGRAPHIC_KEYWORDS", "completedDate": "2026-02-21" },
+    { "name": "constants.ts: all thresholds in one file (MIN_FILL_CONFIDENCE, ESSAY_CONFIDENCE_PENALTY, etc.)", "completedDate": "2026-02-21" },
+    { "name": "heardAbout field: 'How did you hear' no longer matches summary", "completedDate": "2026-02-21" },
+    { "name": "Stateless mode: session-only profile storage (chrome.storage.session)", "completedDate": "2026-02-21" },
+    { "name": "ARCHITECTURE.md: constants table, fill gating pipeline, debug bundle schema, open question targets", "completedDate": "2026-02-21" },
+    { "name": "LEARNINGS.md: quick lookup index, triage checklist, known brittle zones", "completedDate": "2026-02-21" },
+    { "name": "Provider abstraction layer: SmartApplyProvider interface + registry", "completedDate": "2026-02-21" },
+    { "name": "Shared prompt builder + response parser (src/lib/llm/prompt.ts)", "completedDate": "2026-02-21" },
+    { "name": "Ollama provider migrated to src/lib/llm/providers/ollama.ts", "completedDate": "2026-02-21" },
+    { "name": "OpenAI provider (gpt-4o, gpt-4o-mini, gpt-4.1-mini, gpt-4.1-nano)", "completedDate": "2026-02-21" },
+    { "name": "Anthropic provider (claude-sonnet-4-20250514, claude-haiku-4-20250414)", "completedDate": "2026-02-21" },
+    { "name": "Gemini provider (gemini-2.0-flash, gemini-2.5-flash-preview-05-20)", "completedDate": "2026-02-21" },
+    { "name": "Background worker routes to selected provider via registry", "completedDate": "2026-02-21" },
+    { "name": "Settings migration: ollamaUrl → providerConfig", "completedDate": "2026-02-21" },
+    { "name": "Provider settings UI: selector, model, API key, base URL, test connection", "completedDate": "2026-02-21" },
+    { "name": "Manifest host_permissions for OpenAI, Anthropic, Gemini APIs", "completedDate": "2026-02-21" },
+    { "name": "26 new LLM provider tests (prompt, parser, registry, availability)", "completedDate": "2026-02-21" },
+    { "name": "Auto-Apply button: one-click Detect → Fill → Generate pipeline", "completedDate": "2026-02-21" },
+    { "name": "Radio/checkbox detection (detectChoiceGroups) + fill (fillChoiceGroups)", "completedDate": "2026-02-21" },
+    { "name": "Answer Library: hash-based per-question memory with auto-save", "completedDate": "2026-02-21" },
+    { "name": "Voice: user-authored pitch/tone/constraints injected into LLM prompts", "completedDate": "2026-02-21" },
+    { "name": "12 choice-group tests, 15 answer-library tests, 15 voice-prompt tests", "completedDate": "2026-02-21" },
+    { "name": "Tone dropdown with 'Other' custom option (Voice.tone: string)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: middleName field recognition (new ProfileField + keywords)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: bare 'Name' signal matches fullName (not firstName)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: search form element exclusion (isSearchFormElement)", "completedDate": "2026-02-21" },
+    { "name": "Bug fix: 'authorized to be employed' keyword expansion", "completedDate": "2026-02-21" },
+    { "name": "Resume library: ResumeDoc type + resumeStore.ts CRUD", "completedDate": "2026-02-21" },
+    { "name": "Resume generation: buildResumePrompt + parseResumeResponse", "completedDate": "2026-02-21" },
+    { "name": "Resume generation: generateResume() in all 4 providers", "completedDate": "2026-02-21" },
+    { "name": "Resume generation: GENERATE_RESUME message + background handler", "completedDate": "2026-02-21" },
+    { "name": "Resumes tab: library list + editor + markdown preview + download", "completedDate": "2026-02-21" },
+    { "name": "Per-job resume linking: JobRecord.linkedResumeId + FillPreview picker", "completedDate": "2026-02-21" },
+    { "name": "26 new tests: 18 resume-prompt + 8 resume-store (199 total)", "completedDate": "2026-02-21" }
+  ]
+}

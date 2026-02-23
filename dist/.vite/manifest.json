@@ -1,0 +1,51 @@
+{
+  "../../../../@crx/manifest": {
+    "file": "assets/crx-manifest.js-LWJkDw_z.js",
+    "name": "crx-manifest.js",
+    "src": "../../../../@crx/manifest",
+    "isEntry": true
+  },
+  "_gemini-QjDvWq3k.js": {
+    "file": "assets/gemini-QjDvWq3k.js",
+    "name": "gemini"
+  },
+  "_normalize-F5o_Wfdf.js": {
+    "file": "assets/normalize-F5o_Wfdf.js",
+    "name": "normalize"
+  },
+  "index.ts-loader.js": {
+    "file": "assets/index.ts-loader-D0MqFwWt.js",
+    "src": "index.ts-loader.js"
+  },
+  "src/background/index.ts": {
+    "file": "assets/index.ts-FA8AeskE.js",
+    "name": "index.ts",
+    "src": "src/background/index.ts",
+    "isEntry": true,
+    "imports": [
+      "_gemini-QjDvWq3k.js"
+    ]
+  },
+  "src/content/index.ts": {
+    "file": "assets/index.ts-Cco1KjAS.js",
+    "name": "index.ts",
+    "src": "src/content/index.ts",
+    "isEntry": true,
+    "imports": [
+      "_normalize-F5o_Wfdf.js"
+    ]
+  },
+  "src/popup/index.html": {
+    "file": "assets/index.html-B5MoMsSM.js",
+    "name": "index.html",
+    "src": "src/popup/index.html",
+    "isEntry": true,
+    "imports": [
+      "_gemini-QjDvWq3k.js",
+      "_normalize-F5o_Wfdf.js"
+    ],
+    "css": [
+      "assets/index-DixVYmQw.css"
+    ]
+  }
+}

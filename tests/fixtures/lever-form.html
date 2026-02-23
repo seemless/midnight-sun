@@ -1,0 +1,53 @@
+<!-- Simplified Lever job application form -->
+<html>
+<body>
+<div class="application-form">
+  <div class="application-field">
+    <label for="name">Full name *</label>
+    <input type="text" id="name" name="name" />
+  </div>
+  <div class="application-field">
+    <label for="email">Email *</label>
+    <input type="email" id="email" name="email" />
+  </div>
+  <div class="application-field">
+    <label for="phone">Phone</label>
+    <input type="tel" id="phone" name="phone" />
+  </div>
+  <div class="application-field">
+    <label for="org">Current company</label>
+    <input type="text" id="org" name="org" />
+  </div>
+  <div class="application-field">
+    <label for="urls[LinkedIn]">LinkedIn URL</label>
+    <input type="text" id="urls[LinkedIn]" name="urls[LinkedIn]" />
+  </div>
+  <div class="application-field">
+    <label for="urls[GitHub]">GitHub URL</label>
+    <input type="text" id="urls[GitHub]" name="urls[GitHub]" />
+  </div>
+  <div class="application-field">
+    <label for="urls[Portfolio]">Portfolio URL</label>
+    <input type="text" id="urls[Portfolio]" name="urls[Portfolio]" />
+  </div>
+  <div class="application-field">
+    <label for="comments">Additional information</label>
+    <textarea id="comments" name="comments" rows="5"></textarea>
+  </div>
+  <div class="application-field">
+    <label for="resume">Resume/CV</label>
+    <input type="file" id="resume" name="resume" />
+  </div>
+  <!-- Lever often has custom dropdown for location -->
+  <div class="application-field">
+    <label id="location-label">Location preference</label>
+    <div role="listbox" aria-labelledby="location-label" class="custom-select">
+      <div role="option">San Francisco</div>
+      <div role="option">New York</div>
+      <div role="option">Remote</div>
+    </div>
+  </div>
+  <button type="submit">Submit application</button>
+</div>
+</body>
+</html>
